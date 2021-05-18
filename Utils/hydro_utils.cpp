@@ -206,13 +206,12 @@ HydroUtils::ComputeDivergenceRZ ( Box const& bx,
 {
     AMREX_ALWAYS_ASSERT(fluxes_are_area_weighted);
 
-    Real fact = mult / vol;
 
     amrex::ParallelFor(bx, ncomp,[=]
     AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
     {
-        div(i,j,k,n) = ( fx(i+1,j,k,n) -  fx(i,j,k,n) +
-                         fy(i,j+1,k,n) -  fy(i,j,k,n) ) * fact;
+        div(i,j,k,n) = mult * ( fx(i+1,j,k,n) -  fx(i,j,k,n) +
+                                fy(i,j+1,k,n) -  fy(i,j,k,n) ) / vol(i,j,k);
     });
 }
 
