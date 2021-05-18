@@ -104,8 +104,8 @@ EBGodunov::ComputeAofs ( MultiFab& aofs, const int aofs_comp, const int ncomp,
                                            AMREX_D_DECL( fx, fy, fz ),
                                            AMREX_D_DECL( xed, yed, zed ),
                                            AMREX_D_DECL( u, v, w ),
-                                           ncomp, geom, iconserv.data(),
-                                           mult, fluxes_are_area_weighted);
+                                           ncomp, geom, mult,
+                                           fluxes_are_area_weighted);
         }
         else     // EB Godunov
         {
@@ -191,7 +191,7 @@ EBGodunov::ComputeAofs ( MultiFab& aofs, const int aofs_comp, const int ncomp,
                                    AMREX_D_DECL(apx,apy,apz), vfrac_arr,
                                    AMREX_D_DECL(fcx,fcy,fcz), ccent_arr, d_bc,
                                    geom, dt, redistribution_type );
-	 }
+        }
 
 
         // Change sign because for EB we computed -div
@@ -246,7 +246,7 @@ EBGodunov::ComputeSyncAofs ( MultiFab& aofs, const int aofs_comp, const int ncom
     AMREX_ALWAYS_ASSERT(state.hasEBFabFactory());
 
     for (int n = 0; n < ncomp; n++)
-       if (!iconserv[n]) amrex::Abort("EBGodunov does not support non-conservative form");
+        if (!iconserv[n]) amrex::Abort("EBGodunov does not support non-conservative form");
 
     auto const& ebfact= dynamic_cast<EBFArrayBoxFactory const&>(state.Factory());
     auto const& flags = ebfact.getMultiEBCellFlagFab();
@@ -254,9 +254,6 @@ EBGodunov::ComputeSyncAofs ( MultiFab& aofs, const int aofs_comp, const int ncom
     auto const& ccent = ebfact.getCentroid();
     auto const& vfrac = ebfact.getVolFrac();
     auto const& areafrac = ebfact.getAreaFrac();
-
-    // Sync divergence computation is always conservative
-    Gpu::DeviceVector<int> div_iconserv(ncomp,1);
 
     // Compute -div instead of computing div -- this is just for consistency
     // with the way we HAVE to do it for EB (because redistribution operates on
@@ -329,8 +326,8 @@ EBGodunov::ComputeSyncAofs ( MultiFab& aofs, const int aofs_comp, const int ncom
                                            AMREX_D_DECL( fx, fy, fz ),
                                            AMREX_D_DECL( xed, yed, zed ),
                                            AMREX_D_DECL( uc, vc, wc ),
-                                           ncomp, geom, div_iconserv.data(),
-                                           mult, fluxes_are_area_weighted);
+                                           ncomp, geom, mult,
+                                           fluxes_are_area_weighted);
 
             // Subtract contribution to sync aofs -- sign of divergence is aofs is opposite
             // of sign to div as computed by EB_ComputeDivergence, thus it must be subtracted.

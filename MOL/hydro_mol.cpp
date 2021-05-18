@@ -52,7 +52,6 @@ MOL::ComputeAofs ( MultiFab& aofs, int aofs_comp, int ncomp,
         AMREX_ALWAYS_ASSERT(state.nGrow() >= xedge.nGrow()+2);
 
     int const* iconserv_ptr = iconserv.data();
-    Gpu::DeviceVector<int>  div_iconserv(ncomp,1);
 
 #if (AMREX_SPACEDIM==2)
     MultiFab* volume;
@@ -141,8 +140,8 @@ MOL::ComputeAofs ( MultiFab& aofs, int aofs_comp, int ncomp,
                                              AMREX_D_DECL( xed, yed, zed ),
                                              AMREX_D_DECL( u, v, w ),
                                              areax, areay, vol,
-                                             ncomp, div_iconserv.data(),
-                                             mult, fluxes_are_area_weighted);
+                                             ncomp, mult,
+                                             fluxes_are_area_weighted);
 
 	}
 	else
@@ -165,8 +164,8 @@ MOL::ComputeAofs ( MultiFab& aofs, int aofs_comp, int ncomp,
                                            AMREX_D_DECL(fx,fy,fz),
                                            AMREX_D_DECL( xed, yed, zed ),
                                            AMREX_D_DECL( u, v, w ),
-                                           ncomp, geom, div_iconserv.data(),
-                                           mult, fluxes_are_area_weighted);
+                                           ncomp, geom, mult,
+                                           fluxes_are_area_weighted);
         }
 
         // Account for extra term needed for convective differencing
@@ -257,9 +256,6 @@ MOL::ComputeSyncAofs ( MultiFab& aofs, int aofs_comp, int ncomp,
     }
 #endif
 
-    // Sync divergence computation is always conservative
-    Gpu::DeviceVector<int>  div_iconserv(ncomp,1);
-
     Box  const& domain = geom.Domain();
 
     MFItInfo mfi_info;
@@ -326,8 +322,8 @@ MOL::ComputeSyncAofs ( MultiFab& aofs, int aofs_comp, int ncomp,
                                              AMREX_D_DECL( xed, yed, zed ),
                                              AMREX_D_DECL( uc, vc, wc ),
                                              areax, areay, vol,
-                                             ncomp, div_iconserv.data(),
-                                             mult, fluxes_are_area_weighted);
+                                             ncomp, mult,
+                                             fluxes_are_area_weighted);
 
 	}
 	else
@@ -346,8 +342,8 @@ MOL::ComputeSyncAofs ( MultiFab& aofs, int aofs_comp, int ncomp,
                                            AMREX_D_DECL(fx,fy,fz),
                                            AMREX_D_DECL( xed, yed, zed ),
                                            AMREX_D_DECL( uc, vc, wc ),
-                                           ncomp, geom, div_iconserv.data(),
-                                           mult, fluxes_are_area_weighted);
+                                           ncomp, geom,  mult,
+                                           fluxes_are_area_weighted);
         }
 
         // Sum contribution to sync aofs
