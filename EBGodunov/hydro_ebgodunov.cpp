@@ -213,8 +213,7 @@ EBGodunov::ComputeAofs ( MultiFab& aofs, const int aofs_comp, const int ncomp,
             if (redistribution_type=="StateRedist")
                 ++ngrow;
 
-            FArrayBox tmpfab(amrex::grow(bx,ngrow),  (4*AMREX_SPACEDIM + 2)*ncomp);
-            Elixir    eli = tmpfab.elixir();
+            FArrayBox tmpfab(amrex::grow(bx,ngrow),  (4*AMREX_SPACEDIM + 2)*ncomp, The_Async_Arena());
 
 
             if (!known_edgestate)
@@ -320,8 +319,7 @@ EBGodunov::ComputeAofs ( MultiFab& aofs, const int aofs_comp, const int ncomp,
         else if (redistribution_type == "FluxRedist")
           gbx.grow(2);
 
-        FArrayBox tmpfab(gbx, ncomp);
-        Elixir eli = tmpfab.elixir();
+        FArrayBox tmpfab(gbx, ncomp, The_Async_Arena());
             Array4<Real> scratch = tmpfab.array(0);
             if (redistribution_type == "FluxRedist")
             {
@@ -512,9 +510,7 @@ EBGodunov::ComputeSyncAofs ( MultiFab& aofs, const int aofs_comp, const int ncom
             auto const& flags_arr  = flags.const_array(mfi);
 
             int ngrow = 4;
-            FArrayBox tmpfab(amrex::grow(bx,ngrow),  (4*AMREX_SPACEDIM + 2)*ncomp);
-            Elixir    eli = tmpfab.elixir();
-
+            FArrayBox tmpfab(amrex::grow(bx,ngrow),  (4*AMREX_SPACEDIM + 2)*ncomp, The_Async_Arena());
 
             if (!known_edgestate)
             {
@@ -619,15 +615,14 @@ EBGodunov::ComputeSyncAofs ( MultiFab& aofs, const int aofs_comp, const int ncom
         else if (redistribution_type == "FluxRedist")
           gbx.grow(2);
 
-        FArrayBox tmpfab(gbx, ncomp*2);
-        Elixir eli = tmpfab.elixir();
-            Array4<Real> scratch = tmpfab.array(0);
-            if (redistribution_type == "FluxRedist")
-            {
-                amrex::ParallelFor(Box(scratch),
-                [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
-                { scratch(i,j,k) = 1.;});
-            }
+        FArrayBox tmpfab(gbx, ncomp*2, The_Async_Arena());
+        Array4<Real> scratch = tmpfab.array(0);
+        if (redistribution_type == "FluxRedist")
+        {
+            amrex::ParallelFor(Box(scratch),
+            [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+            { scratch(i,j,k) = 1.;});
+        }
         Array4<Real> divtmp_redist_arr = tmpfab.array(ncomp);
 
         // Redistribute

@@ -232,8 +232,7 @@ Godunov::ComputeSyncAofs ( MultiFab& aofs, const int aofs_comp, const int ncomp,
         // Temporary divergence
         Box tmpbox = amrex::surroundingNodes(bx);
         int tmpcomp = ncomp*AMREX_SPACEDIM;
-        FArrayBox tmpfab(tmpbox, tmpcomp);
-        Elixir eli = tmpfab.elixir();
+        FArrayBox tmpfab(tmpbox, tmpcomp, The_Async_Arena());
         Array4<Real> divtmp_arr = tmpfab.array();
 
         Real mult = -1.0;
